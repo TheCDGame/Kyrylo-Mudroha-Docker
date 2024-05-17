@@ -1,0 +1,23 @@
+---
+- hosts: localhost
+  tasks:
+  - name: "Download the Image"
+    ansible.builtin.get_url:
+      url: "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
+      dest: "/tmp/images/"
+      mode: '0755'
+    register: image_download_stats
+
+   - name: "Print the downloaded image name"
+     debug:
+       msg: "{{ image_download_stats.dest|basename }}"
+
+- hosts: localhost
+  tasks:
+  - name: "Download the image"
+    shell: wget --show-progress=off   --content-disposition -N https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img --force-directories -P /tmp/images/
+    register: image_download
+
+  - name: "Print the name of the image"
+    debug:
+      msg: "{% if image_download.stdout_lines |length > 0  %}{{ image_download.stdout_lines |regex_search('(?<=‘)(.*?)(?=’)')}}{%else%}{{image_download.stderr_lines |regex_search('(?<=‘)(.*?)(?=’)')}}{%endif%}"
